@@ -1,0 +1,15 @@
+pi-ast-grep
+
+This package is a port of the ast-grep tool stack from oh-my-openagent (omo)
+at https://github.com/code-yeongyu/oh-my-openagent (originally licensed under
+the Sustainable Use License 1.0).
+
+The original author Yeongyu Kim (https://github.com/code-yeongyu) has
+re-licensed the ported source under MIT for distribution as a pi-coding-agent
+extension. See LICENSE for the MIT terms.
+
+The underlying ast-grep CLI is by Herrington Darkholme
+(https://ast-grep.github.io). Distributed under the MIT License.
+
+The pi-coding-agent host is by Mario Zechner
+(https://github.com/badlogic/pi-mono). Distributed under the MIT License.

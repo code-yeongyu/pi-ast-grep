@@ -26,15 +26,25 @@
   },
   "scripts": {
     "test": "vitest --run",
-    "test:integration": "vitest --run test/integration",
+    "test:integration": "vitest --run test/sg-binary.integration.test.ts",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "check": "tsc --noEmit && biome check ."
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-ai": "*",
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "typebox": "*"
   },
   "dependencies": {
     "@ast-grep/cli": "^0.41.1",
     "extract-zip": "^2.0.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.5",
     "@mariozechner/pi-ai": "^0.70.6",
     "@mariozechner/pi-coding-agent": "^0.70.6",
     "@mariozechner/pi-tui": "^0.70.6",

@@ -1,5 +1,7 @@
 # pi-ast-grep
 
+[![ci](https://github.com/code-yeongyu/pi-ast-grep/actions/workflows/ci.yml/badge.svg)](https://github.com/code-yeongyu/pi-ast-grep/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 AST-aware code search and rewrite for the [pi coding agent](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent). Faithful port of the ast-grep tool stack from [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent).
 
 ## Origin

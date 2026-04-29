@@ -1,5 +1,12 @@
-import { type AgentToolResult, keyHint, type Theme, type ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
+import type { AgentToolResult, Theme, ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
 import { type Component, Text } from "@mariozechner/pi-tui";
+
+// Local clone of the host coding-agent's keyHint - inlined because
+// `@code-yeongyu/senpi` does not re-export it. Hardcodes the default
+// keybinding label rather than dynamic lookup.
+function keyHint(theme: Theme, key: string, description: string): string {
+	return theme.fg("dim", key) + theme.fg("muted", ` ${description}`);
+}
 
 import type { AstGrepReplaceDetails, AstGrepSearchDetails } from "./tools.js";
 import type { CliLanguage, CliMatch, SgTruncationReason } from "./types.js";
@@ -298,7 +305,7 @@ function formatExpandedMatches(matches: CliMatch[], theme: Theme): string {
 	const remainingMatches = matches.length - displayedMatches.length;
 	if (remainingMatches > 0) {
 		lines.push(
-			`${theme.fg("muted", `... ${remainingMatches} more lines (`)}${keyHint("app.tools.expand", "to expand")}${theme.fg("muted", ")")}`,
+			`${theme.fg("muted", `... ${remainingMatches} more lines (`)}${keyHint(theme, "Ctrl+O", "to expand")}${theme.fg("muted", ")")}`,
 		);
 	}
 
@@ -333,7 +340,7 @@ function formatSearchResultText(
 	}
 
 	if (!options.expanded) {
-		return `${theme.fg("success", `✓ ${details.totalMatches} match(es)`)}${formatTruncationSuffix(details, theme)} (${keyHint("app.tools.expand", "to expand")})`;
+		return `${theme.fg("success", `✓ ${details.totalMatches} match(es)`)}${formatTruncationSuffix(details, theme)} (${keyHint(theme, "Ctrl+O", "to expand")})`;
 	}
 
 	return `${theme.fg("success", `✓ ${details.totalMatches} match(es)`)}${formatTruncationBanner(details, theme)}${formatExpandedMatches(details.matches, theme)}`;

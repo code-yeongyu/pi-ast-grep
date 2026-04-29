@@ -1,6 +1,10 @@
 import { StringEnum } from "@mariozechner/pi-ai";
-import { defineTool } from "@mariozechner/pi-coding-agent";
+import type { defineTool as DefineToolType } from "@mariozechner/pi-coding-agent";
 import { Type } from "typebox";
+
+// Inlined identity so this extension has no runtime dep on a
+// specific coding-agent fork (pi-mono vs senpi vs ...).
+const defineTool: typeof DefineToolType = (t) => t;
 
 import { runSg } from "./cli.js";
 import { CLI_LANGUAGES } from "./languages.js";

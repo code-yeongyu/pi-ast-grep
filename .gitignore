@@ -1,0 +1,6 @@
+node_modules/
+dist/
+coverage/
+.sisyphus/
+*.log
+.DS_Store

@@ -1,0 +1,50 @@
+{
+  "name": "pi-ast-grep",
+  "version": "0.1.0",
+  "description": "AST-aware code search and replace tools for pi-mono coding-agent. Ports omo's ast-grep tool stack as a pi extension. Auto-downloads the sg binary on first use.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/code-yeongyu/pi-ast-grep",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-yeongyu/pi-ast-grep.git"
+  },
+  "keywords": [
+    "pi",
+    "pi-mono",
+    "pi-coding-agent",
+    "extension",
+    "ast-grep",
+    "sg",
+    "code-search",
+    "ast"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:integration": "vitest --run test/integration",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ast-grep/cli": "^0.41.1",
+    "extract-zip": "^2.0.1"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-ai": "^0.70.6",
+    "@mariozechner/pi-coding-agent": "^0.70.6",
+    "@mariozechner/pi-tui": "^0.70.6",
+    "@types/extract-zip": "^2.0.0",
+    "@types/node": "^22.10.5",
+    "typebox": "^1.1.34",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

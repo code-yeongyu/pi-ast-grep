@@ -1,15 +1,12 @@
 import type { AgentToolResult, Theme, ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
 import { type Component, Text } from "@mariozechner/pi-tui";
 
-// Local clone of the host coding-agent's keyHint - inlined because
-// `@code-yeongyu/senpi` does not re-export it. Hardcodes the default
-// keybinding label rather than dynamic lookup.
+import type { AstGrepReplaceDetails, AstGrepSearchDetails } from "./tools.js";
+import type { CliLanguage, CliMatch, SgTruncationReason } from "./types.js";
+
 function keyHint(theme: Theme, key: string, description: string): string {
 	return theme.fg("dim", key) + theme.fg("muted", ` ${description}`);
 }
-
-import type { AstGrepReplaceDetails, AstGrepSearchDetails } from "./tools.js";
-import type { CliLanguage, CliMatch, SgTruncationReason } from "./types.js";
 
 interface RenderContext {
 	lastComponent: Component | undefined;

@@ -1,5 +1,5 @@
-import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -11,20 +11,20 @@ const __dirname = dirname(__filename);
 const FIXTURE_DIR = resolve(__dirname, "fixtures/sg-project");
 const TS_FIXTURE = resolve(FIXTURE_DIR, "sample.ts");
 
-const previousOffline = process.env["PI_OFFLINE"];
+const previousOffline = process.env.PI_OFFLINE;
 
 describe("sg binary integration", () => {
 	beforeAll(() => {
 		// given a hermetic offline-disabled environment so resolution can use
 		// the locally-installed @ast-grep/cli package instead of GitHub
-		delete process.env["PI_OFFLINE"];
+		delete process.env.PI_OFFLINE;
 	});
 
 	afterAll(() => {
 		if (previousOffline === undefined) {
-			delete process.env["PI_OFFLINE"];
+			delete process.env.PI_OFFLINE;
 		} else {
-			process.env["PI_OFFLINE"] = previousOffline;
+			process.env.PI_OFFLINE = previousOffline;
 		}
 	});
 
@@ -55,6 +55,10 @@ describe("sg binary integration", () => {
 		expect(result.error).toBeUndefined();
 		expect(result.matches.length).toBeGreaterThanOrEqual(1);
 		const firstMatch = result.matches[0];
+		if (!firstMatch) {
+			expect.fail("expected at least one match");
+			return;
+		}
 		expect(firstMatch.file).toContain("sample.ts");
 		expect(firstMatch.text).toContain("console.log");
 		expect(typeof firstMatch.range.start.line).toBe("number");

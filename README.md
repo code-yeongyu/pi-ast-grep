@@ -183,6 +183,12 @@ The test suite uses vitest. Test descriptions follow `#given .. #when .. #then` 
 
 [MIT](LICENSE). See [NOTICE](NOTICE) for re-license disclosure relative to omo.
 
+## Related
+
+- [senpi](https://github.com/code-yeongyu/senpi) — the fork/runtime these extensions are extracted from.
+- [Ultraworkers Discord](https://discord.gg/PUwSMR9XNk) — community link from the senpi README.
+- [Dori](https://sisyphuslabs.ai) — the product powered by senpi under the hood.
+
 ## Acknowledgements
 
 - **Yeongyu Kim** ([@code-yeongyu](https://github.com/code-yeongyu)) — author of the original ast-grep tools in [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent), and of this pi port.

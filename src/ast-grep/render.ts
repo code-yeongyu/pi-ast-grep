@@ -1,5 +1,5 @@
-import type { AgentToolResult, Theme, ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
-import { type Component, Text } from "@mariozechner/pi-tui";
+import type { AgentToolResult, Theme, ToolRenderResultOptions } from "@earendil-works/pi-coding-agent";
+import { type Component, Text } from "@earendil-works/pi-tui";
 
 import type { AstGrepReplaceDetails, AstGrepSearchDetails } from "./tools.js";
 import type { CliLanguage, CliMatch, SgTruncationReason } from "./types.js";

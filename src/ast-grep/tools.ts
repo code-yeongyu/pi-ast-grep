@@ -1,5 +1,5 @@
-import { StringEnum } from "@mariozechner/pi-ai";
-import type { defineTool as DefineToolType } from "@mariozechner/pi-coding-agent";
+import { StringEnum } from "@earendil-works/pi-ai";
+import type { defineTool as DefineToolType } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
 // Inlined identity so this extension has no runtime dep on a

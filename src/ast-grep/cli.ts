@@ -1,8 +1,6 @@
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
 
-import { getAstGrepPath, getSgCliPath } from "./binary-path.js";
-import { ensureAstGrepBinary } from "./downloader.js";
+import { getSgCliPath } from "./binary-path.js";
 import { createSgResultFromStdout } from "./json-output.js";
 import { DEFAULT_TIMEOUT_MS } from "./languages.js";
 import { collectProcessOutputWithTimeout } from "./process-timeout.js";
@@ -17,24 +15,18 @@ const INSTALL_HINT = [
 	"  brew install ast-grep",
 ].join("\n");
 
-const AUTO_DOWNLOAD_FAILED_HINT = [
-	"ast-grep CLI binary not found.",
-	"",
-	"Auto-download failed. Manual install options:",
-	"  npm install -g @ast-grep/cli",
-	"  cargo install ast-grep --locked",
-	"  brew install ast-grep",
-].join("\n");
+function getErrorCode(err: unknown): string | undefined {
+	if (typeof err !== "object" || err === null || !("code" in err)) {
+		return undefined;
+	}
 
-interface NodeSystemError extends Error {
-	code?: string;
+	const code = err.code;
+	return typeof code === "string" ? code : undefined;
 }
 
 function isEnoentError(err: unknown): boolean {
-	const errorCode =
-		typeof err === "object" && err !== null && "code" in err ? (err as NodeSystemError).code : undefined;
 	const message = err instanceof Error ? err.message : String(err);
-	return errorCode === "ENOENT" || message.includes("ENOENT") || message.includes("not found");
+	return getErrorCode(err) === "ENOENT" || message.includes("ENOENT") || message.includes("not found");
 }
 
 export function buildSgArgs(options: RunSgOptions, includeUpdateAll: boolean): string[] {
@@ -79,20 +71,15 @@ export async function runSg(options: RunSgOptions): Promise<SgResult> {
 	const readOptions = shouldSeparateWritePass ? { ...options, updateAll: false } : options;
 	const args = buildSgArgs(readOptions, !shouldSeparateWritePass);
 
-	let cliPath = getSgCliPath();
+	const cliPath = getSgCliPath();
 
-	if (!cliPath || !existsSync(cliPath)) {
-		const downloadedPath = await getAstGrepPath();
-		if (downloadedPath && existsSync(downloadedPath)) {
-			cliPath = downloadedPath;
-		} else {
-			return {
-				matches: [],
-				totalMatches: 0,
-				truncated: false,
-				error: INSTALL_HINT,
-			};
-		}
+	if (!cliPath) {
+		return {
+			matches: [],
+			totalMatches: 0,
+			truncated: false,
+			error: INSTALL_HINT,
+		};
 	}
 
 	const timeout = DEFAULT_TIMEOUT_MS;
@@ -118,15 +105,11 @@ export async function runSg(options: RunSgOptions): Promise<SgResult> {
 		}
 
 		if (isEnoentError(error)) {
-			const downloadedPath = await ensureAstGrepBinary();
-			if (downloadedPath) {
-				return runSg(options);
-			}
 			return {
 				matches: [],
 				totalMatches: 0,
 				truncated: false,
-				error: AUTO_DOWNLOAD_FAILED_HINT,
+				error: INSTALL_HINT,
 			};
 		}
 
@@ -170,4 +153,4 @@ export async function runSg(options: RunSgOptions): Promise<SgResult> {
 	return jsonResult;
 }
 
-export { INSTALL_HINT, AUTO_DOWNLOAD_FAILED_HINT };
+export { INSTALL_HINT };

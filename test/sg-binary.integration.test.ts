@@ -1,7 +1,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { findSgCliPathSync } from "../src/ast-grep/binary-path.js";
 import { runSg } from "../src/ast-grep/cli.js";
@@ -11,23 +11,7 @@ const __dirname = dirname(__filename);
 const FIXTURE_DIR = resolve(__dirname, "fixtures/sg-project");
 const TS_FIXTURE = resolve(FIXTURE_DIR, "sample.ts");
 
-const previousOffline = process.env.PI_OFFLINE;
-
 describe("sg binary integration", () => {
-	beforeAll(() => {
-		// given a hermetic offline-disabled environment so resolution can use
-		// the locally-installed @ast-grep/cli package instead of GitHub
-		delete process.env.PI_OFFLINE;
-	});
-
-	afterAll(() => {
-		if (previousOffline === undefined) {
-			delete process.env.PI_OFFLINE;
-		} else {
-			process.env.PI_OFFLINE = previousOffline;
-		}
-	});
-
 	it("#given a resolvable sg binary #when checking #then it is present", () => {
 		// when
 		const path = findSgCliPathSync();

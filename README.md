@@ -42,6 +42,33 @@ Use dryRun=false to apply changes.
 
 ## Installation
 
+`pi-ast-grep` requires the ast-grep CLI (`sg`) to already be installed on `PATH`. See the [official ast-grep installation guide](https://ast-grep.github.io/guide/quick-start.html#installation) for the full set of options.
+
+Common install commands:
+
+```bash
+# macOS (Homebrew)
+brew install ast-grep
+
+# Linux / macOS / Windows with npm
+npm install -g @ast-grep/cli
+
+# Linux / macOS / Windows with Cargo
+cargo install ast-grep --locked
+
+# Windows (winget)
+winget install ast-grep.ast-grep
+
+# Windows (Scoop)
+scoop install ast-grep
+```
+
+Verify the CLI is available before using the extension:
+
+```bash
+sg --version
+```
+
 The package targets the [`pi`](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent) coding agent. Pi loads extensions from `~/.pi/agent/extensions/`, project `.pi/extensions/`, or via the `--extension` / `-e` CLI flag.
 
 Pick whichever route fits:
@@ -121,47 +148,14 @@ When you genuinely want text search, use the built-in `grep` tool instead.
 
 ## Binary Management
 
-`pi-ast-grep` resolves the `sg` binary in this order:
-
-1. **Cached download** — `$XDG_CACHE_HOME/pi-ast-grep/bin/sg` on Unix, `%LOCALAPPDATA%\pi-ast-grep\bin\sg.exe` on Windows. Validated by existence and `>10000` byte size.
-2. **`@ast-grep/cli` npm package** — resolved relative to this package via `createRequire`.
-3. **Platform-specific npm package** — `@ast-grep/cli-{platform}-{arch}-{libc}` (`darwin-arm64`, `darwin-x64`, `linux-arm64`, `linux-x64`, `win32-x64`, `win32-arm64`, `win32-ia32`).
-4. **`PATH`** — any `sg` (or `sg.exe`) on the system PATH.
-5. **Homebrew** — `/opt/homebrew/bin/sg`, `/usr/local/bin/sg` on macOS.
-6. **GitHub release auto-download** (last resort) — pulls `app-{arch}-{os}.zip` from `https://github.com/ast-grep/ast-grep/releases/download/<version>/...` and extracts to the cache directory. The version comes from the `@ast-grep/cli` package.json when present, otherwise `0.41.1`.
-
-### Trust model
-
-Auto-download fetches release assets over HTTPS. There is **no checksum verification beyond TLS**. If your security posture requires reproducible binary provenance, install `sg` manually and disable auto-download with `PI_OFFLINE=1`.
-
-### Offline / locked-down networks
-
-Set `PI_OFFLINE=1` (or `PI_OFFLINE=true`) to skip the GitHub download path. The tools will surface manual-install guidance instead.
-
-```bash
-export PI_OFFLINE=1
-```
-
-Manual install options when offline:
-
-```bash
-# npm
-npm install -g @ast-grep/cli
-
-# cargo
-cargo install ast-grep --locked
-
-# Homebrew (macOS)
-brew install ast-grep
-```
+`pi-ast-grep` does not download, cache, or bundle ast-grep. It resolves only `sg` from the current process `PATH`. Install ast-grep separately and ensure `sg --version` works in the same environment that launches pi.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
-| "ast-grep (sg) binary not found" | Install via npm / cargo / brew (see above), or unset `PI_OFFLINE`. |
-| Locked-down corporate network | Set `PI_OFFLINE=1` and install `sg` manually. |
-| `EACCES` writing to cache | On Unix, ensure `$XDG_CACHE_HOME` (or `~/.cache`) is writable. On Windows, ensure `%LOCALAPPDATA%` is writable. |
+| "ast-grep (sg) binary not found" | Install ast-grep and ensure `sg --version` works from the same shell/session that starts pi. |
+| Locked-down corporate network | Install ast-grep from an approved internal package source and put `sg` on `PATH`. |
 | Tool registers but never runs | Confirm pi loaded the extension: `pi --list-models -e ./src/index.ts` should show no extension errors. Use `pi -e ./src/index.ts` for one-shot manual smoke. |
 | Pattern always returns "No matches found" | Run with `--lang` matching the file. Double-check the pattern is a complete AST node (function patterns need params and body). The tool returns a hint when it detects regex-style patterns. |
 

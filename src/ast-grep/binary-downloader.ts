@@ -5,6 +5,8 @@ import { pipeline } from "node:stream/promises";
 
 import extractZip from "extract-zip";
 
+import { AstGrepDownloadError } from "./errors.js";
+
 export function getCachedBinaryPath(cacheDir: string, binaryName: string): string | null {
 	const path = `${cacheDir}/${binaryName}`;
 	return existsSync(path) ? path : null;
@@ -19,13 +21,13 @@ export function ensureCacheDir(cacheDir: string): void {
 export async function downloadArchive(downloadUrl: string, archivePath: string): Promise<void> {
 	const response = await fetch(downloadUrl, { redirect: "follow" });
 	if (!response.ok) {
-		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+		throw new AstGrepDownloadError(`HTTP ${response.status}: ${response.statusText}`);
 	}
 	if (!response.body) {
-		throw new Error("Empty response body");
+		throw new AstGrepDownloadError("Empty response body");
 	}
 
-	const nodeStream = Readable.fromWeb(response.body as never);
+	const nodeStream = Readable.fromWeb(response.body);
 	await pipeline(nodeStream, createWriteStream(archivePath));
 }
 

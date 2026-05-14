@@ -11,7 +11,8 @@ export function createSgResultFromStdout(stdout: string): SgResult {
 
 	let matches: CliMatch[] = [];
 	try {
-		matches = JSON.parse(outputToProcess) as CliMatch[];
+		const parsed: unknown = JSON.parse(outputToProcess);
+		matches = isCliMatchArray(parsed) ? parsed : [];
 	} catch {
 		if (!outputTruncated) {
 			return { matches: [], totalMatches: 0, truncated: false };
@@ -24,8 +25,11 @@ export function createSgResultFromStdout(stdout: string): SgResult {
 				const bracketIndex = outputToProcess.lastIndexOf("},", lastValidIndex);
 				if (bracketIndex > 0) {
 					const truncatedJson = `${outputToProcess.substring(0, bracketIndex + 1)}]`;
-					matches = JSON.parse(truncatedJson) as CliMatch[];
-					salvagedTruncatedJson = true;
+					const parsed: unknown = JSON.parse(truncatedJson);
+					if (isCliMatchArray(parsed)) {
+						matches = parsed;
+						salvagedTruncatedJson = true;
+					}
 				}
 			}
 
@@ -59,4 +63,39 @@ export function createSgResultFromStdout(stdout: string): SgResult {
 		truncated: outputTruncated || matchesTruncated,
 		truncatedReason: outputTruncated ? "max_output_bytes" : matchesTruncated ? "max_matches" : undefined,
 	};
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNumberPair(value: unknown): value is { start: number; end: number } {
+	return isRecord(value) && typeof value.start === "number" && typeof value.end === "number";
+}
+
+function isPosition(value: unknown): value is { line: number; column: number } {
+	return isRecord(value) && typeof value.line === "number" && typeof value.column === "number";
+}
+
+function isCliMatch(value: unknown): value is CliMatch {
+	if (!isRecord(value) || !isRecord(value.range)) {
+		return false;
+	}
+	return (
+		typeof value.text === "string" &&
+		typeof value.file === "string" &&
+		typeof value.lines === "string" &&
+		isRecord(value.charCount) &&
+		typeof value.charCount.leading === "number" &&
+		typeof value.charCount.trailing === "number" &&
+		typeof value.language === "string" &&
+		isRecord(value.range.byteOffset) &&
+		isNumberPair(value.range.byteOffset) &&
+		isPosition(value.range.start) &&
+		isPosition(value.range.end)
+	);
+}
+
+function isCliMatchArray(value: unknown): value is CliMatch[] {
+	return Array.isArray(value) && value.every(isCliMatch);
 }

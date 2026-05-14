@@ -13,6 +13,20 @@ import { renderReplaceCall, renderReplaceResult, renderSearchCall, renderSearchR
 import { formatReplaceResult, formatSearchResult } from "./result-formatter.js";
 import type { CliLanguage, SgResult } from "./types.js";
 
+function isCliLanguage(value: unknown): value is CliLanguage {
+	return typeof value === "string" && CLI_LANGUAGES.some((language) => language === value);
+}
+
+function invalidLanguageResult(language: unknown): {
+	content: Array<{ type: "text"; text: string }>;
+	details: undefined;
+} {
+	return {
+		content: [{ type: "text", text: `Unsupported language: ${String(language)}` }],
+		details: undefined,
+	};
+}
+
 const SearchParams = Type.Object({
 	pattern: Type.String({
 		description: "AST pattern with meta-variables ($VAR, $$$). Must be a complete AST node.",
@@ -83,10 +97,14 @@ export const ast_grep_search = defineTool({
 	],
 	parameters: SearchParams,
 	async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+		if (!isCliLanguage(params.lang)) {
+			return invalidLanguageResult(params.lang);
+		}
+
 		const paths = params.paths && params.paths.length > 0 ? params.paths : [ctx.cwd];
 		const result = await runSg({
 			pattern: params.pattern,
-			lang: params.lang as CliLanguage,
+			lang: params.lang,
 			paths,
 			globs: params.globs,
 			context: params.context,
@@ -95,13 +113,13 @@ export const ast_grep_search = defineTool({
 		const text = formatSearchResult(result);
 		const hint =
 			result.matches.length === 0 && !result.error
-				? (getPatternHint(params.pattern, params.lang as CliLanguage) ?? undefined)
+				? (getPatternHint(params.pattern, params.lang) ?? undefined)
 				: undefined;
 		const finalText = hint ? `${text}\n\n${hint}` : text;
 
 		const details: AstGrepSearchDetails = {
 			pattern: params.pattern,
-			lang: params.lang as CliLanguage,
+			lang: params.lang,
 			paths,
 			globs: params.globs,
 			matches: result.matches,
@@ -136,12 +154,16 @@ export const ast_grep_replace = defineTool({
 	parameters: ReplaceParams,
 	executionMode: "sequential",
 	async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+		if (!isCliLanguage(params.lang)) {
+			return invalidLanguageResult(params.lang);
+		}
+
 		const paths = params.paths && params.paths.length > 0 ? params.paths : [ctx.cwd];
 		const dryRun = params.dryRun !== false;
 		const result = await runSg({
 			pattern: params.pattern,
 			rewrite: params.rewrite,
-			lang: params.lang as CliLanguage,
+			lang: params.lang,
 			paths,
 			globs: params.globs,
 			updateAll: !dryRun,
@@ -152,7 +174,7 @@ export const ast_grep_replace = defineTool({
 		const details: AstGrepReplaceDetails = {
 			pattern: params.pattern,
 			rewrite: params.rewrite,
-			lang: params.lang as CliLanguage,
+			lang: params.lang,
 			paths,
 			globs: params.globs,
 			dryRun,

@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 
 import { getAstGrepPath, getSgCliPath } from "./binary-path.js";
 import { ensureAstGrepBinary } from "./downloader.js";
+import { SearchTimeoutError } from "./errors.js";
 import { createSgResultFromStdout } from "./json-output.js";
 import { DEFAULT_TIMEOUT_MS } from "./languages.js";
 import { collectProcessOutputWithTimeout } from "./process-timeout.js";
@@ -26,13 +27,8 @@ const AUTO_DOWNLOAD_FAILED_HINT = [
 	"  brew install ast-grep",
 ].join("\n");
 
-interface NodeSystemError extends Error {
-	code?: string;
-}
-
 function isEnoentError(err: unknown): boolean {
-	const errorCode =
-		typeof err === "object" && err !== null && "code" in err ? (err as NodeSystemError).code : undefined;
+	const errorCode = typeof err === "object" && err !== null && "code" in err ? err.code : undefined;
 	const message = err instanceof Error ? err.message : String(err);
 	return errorCode === "ENOENT" || message.includes("ENOENT") || message.includes("not found");
 }
@@ -73,7 +69,7 @@ async function spawnSg(cliPath: string, args: string[], timeoutMs: number) {
 	return collectProcessOutputWithTimeout(proc, timeoutMs);
 }
 
-export async function runSg(options: RunSgOptions): Promise<SgResult> {
+export async function runSg(options: RunSgOptions, hasRetriedDownload = false): Promise<SgResult> {
 	const shouldSeparateWritePass = !!(options.rewrite && options.updateAll);
 
 	const readOptions = shouldSeparateWritePass ? { ...options, updateAll: false } : options;
@@ -107,7 +103,7 @@ export async function runSg(options: RunSgOptions): Promise<SgResult> {
 		stderr = output.stderr;
 		exitCode = output.exitCode;
 	} catch (error) {
-		if (error instanceof Error && error.message.includes("timeout")) {
+		if (error instanceof SearchTimeoutError) {
 			return {
 				matches: [],
 				totalMatches: 0,
@@ -119,8 +115,8 @@ export async function runSg(options: RunSgOptions): Promise<SgResult> {
 
 		if (isEnoentError(error)) {
 			const downloadedPath = await ensureAstGrepBinary();
-			if (downloadedPath) {
-				return runSg(options);
+			if (downloadedPath && !hasRetriedDownload) {
+				return runSg(options, true);
 			}
 			return {
 				matches: [],

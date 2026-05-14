@@ -187,7 +187,7 @@ function isReplaceDetails(value: unknown): value is AstGrepReplaceDetails {
 }
 
 function reuseText(context: RenderContext): Text {
-	const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
+	const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
 	return text;
 }
 

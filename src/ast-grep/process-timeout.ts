@@ -1,5 +1,7 @@
 import type { ChildProcess } from "node:child_process";
 
+import { SearchTimeoutError } from "./errors.js";
+
 export interface ProcessOutput {
 	stdout: string;
 	stderr: string;
@@ -37,7 +39,7 @@ export async function collectProcessOutputWithTimeout(proc: ChildProcess, timeou
 					proc.kill("SIGKILL");
 				}
 			}, 1000);
-			reject(new Error(`Search timeout after ${timeoutMs}ms`));
+			reject(new SearchTimeoutError(timeoutMs));
 		}, timeoutMs);
 
 		proc.once("close", (code) => {

@@ -4,7 +4,7 @@ import { delimiter, dirname, join } from "node:path";
 
 import { ensureAstGrepBinary, getCachedBinaryPath } from "./downloader.js";
 
-type Platform = "darwin" | "linux" | "win32" | "unsupported";
+type SupportedPlatform = "darwin" | "linux" | "win32";
 
 const MIN_BINARY_SIZE_BYTES = 10_000;
 
@@ -17,7 +17,7 @@ function isValidBinary(filePath: string): boolean {
 }
 
 function getPlatformPackageName(): string | null {
-	const platform = process.platform as Platform;
+	const platform = isSupportedPlatform(process.platform) ? process.platform : "unsupported";
 	const arch = process.arch;
 
 	const platformMap: Record<string, string> = {
@@ -31,6 +31,10 @@ function getPlatformPackageName(): string | null {
 	};
 
 	return platformMap[`${platform}-${arch}`] ?? null;
+}
+
+function isSupportedPlatform(platform: NodeJS.Platform): platform is SupportedPlatform {
+	return platform === "darwin" || platform === "linux" || platform === "win32";
 }
 
 function findOnPath(binaryName: string): string | null {

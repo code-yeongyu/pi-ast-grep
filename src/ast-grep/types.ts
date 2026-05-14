@@ -14,10 +14,8 @@ export interface Range {
 
 export interface CliMatch {
 	text: string;
-	range: {
+	range: Range & {
 		byteOffset: { start: number; end: number };
-		start: Position;
-		end: Position;
 	};
 	file: string;
 	lines: string;

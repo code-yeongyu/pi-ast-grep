@@ -34,11 +34,15 @@ const PLATFORM_MAP: Record<string, PlatformInfo> = {
 function getAstGrepVersion(): string {
 	try {
 		const require = createRequire(import.meta.url);
-		const pkg = require("@ast-grep/cli/package.json") as { version?: string };
-		return pkg.version ?? DEFAULT_VERSION;
+		const pkg: unknown = require("@ast-grep/cli/package.json");
+		return isPackageWithVersion(pkg) ? pkg.version : DEFAULT_VERSION;
 	} catch {
 		return DEFAULT_VERSION;
 	}
+}
+
+function isPackageWithVersion(value: unknown): value is { version: string } {
+	return typeof value === "object" && value !== null && "version" in value && typeof value.version === "string";
 }
 
 export function getCacheDir(): string {

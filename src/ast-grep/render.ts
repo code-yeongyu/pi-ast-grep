@@ -1,12 +1,8 @@
 import type { AgentToolResult, Theme, ToolRenderResultOptions } from "@mariozechner/pi-coding-agent";
-import { type Component, Text } from "@mariozechner/pi-tui";
+import { type Component, Text, truncateToWidth } from "@mariozechner/pi-tui";
 
 import type { AstGrepReplaceDetails, AstGrepSearchDetails } from "./tools.js";
 import type { CliLanguage, CliMatch, SgTruncationReason } from "./types.js";
-
-function keyHint(theme: Theme, key: string, description: string): string {
-	return theme.fg("dim", key) + theme.fg("muted", ` ${description}`);
-}
 
 interface RenderContext {
 	lastComponent: Component | undefined;
@@ -29,9 +25,16 @@ interface AstGrepReplaceCallArgs {
 	dryRun?: boolean;
 }
 
+interface MatchGroup {
+	file: string;
+	matches: CliMatch[];
+}
+
 const MAX_COLLAPSED_ERROR_LENGTH = 180;
+const MAX_COLLAPSED_FILES = 3;
 const MAX_EXPANDED_MATCHES = 15;
 const MAX_PATH_LENGTH = 42;
+const MAX_SNIPPET_LENGTH = 160;
 
 function getTextContent<TDetails>(result: AgentToolResult<TDetails>): string {
 	return result.content.find((content) => content.type === "text")?.text ?? "";
@@ -284,29 +287,99 @@ function formatTruncationBanner(
 	return `\n${theme.fg("warning", `[Truncated: ${formatTruncationReason(details.truncatedReason)}]`)}`;
 }
 
-function formatLocation(match: CliMatch): string {
-	return `${match.file}:${match.range.start.line + 1}:${match.range.start.column + 1}`;
-}
-
 function formatMatchLine(match: CliMatch): string {
 	const line = match.lines.trim();
 	return line.length > 0 ? line : match.text.trim();
 }
 
-function formatExpandedMatches(matches: CliMatch[], theme: Theme): string {
-	const displayedMatches = matches.slice(0, MAX_EXPANDED_MATCHES);
-	const lines = displayedMatches.map((match) => {
-		return `${theme.fg("muted", formatLocation(match))}\n  ${theme.fg("toolOutput", formatMatchLine(match))}`;
-	});
+function formatPosition(match: CliMatch): string {
+	return `${match.range.start.line + 1}:${match.range.start.column + 1}`;
+}
 
-	const remainingMatches = matches.length - displayedMatches.length;
-	if (remainingMatches > 0) {
-		lines.push(
-			`${theme.fg("muted", `... ${remainingMatches} more lines (`)}${keyHint(theme, "Ctrl+O", "to expand")}${theme.fg("muted", ")")}`,
+function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+	return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function groupMatchesByFile(matches: CliMatch[]): MatchGroup[] {
+	const groups: MatchGroup[] = [];
+	const indexes = new Map<string, number>();
+
+	for (const match of matches) {
+		const existingIndex = indexes.get(match.file);
+		if (existingIndex !== undefined) {
+			groups[existingIndex]?.matches.push(match);
+			continue;
+		}
+
+		indexes.set(match.file, groups.length);
+		groups.push({ file: match.file, matches: [match] });
+	}
+
+	return groups;
+}
+
+function formatMatchSummary(totalMatches: number, fileCount: number, theme: Theme): string {
+	return (
+		theme.fg("success", pluralize(totalMatches, "match", "matches")) +
+		theme.fg("muted", ` • ${pluralize(fileCount, "file")}`)
+	);
+}
+
+function formatReplacementSummary(details: AstGrepReplaceDetails, fileCount: number, theme: Theme): string {
+	const replacements = pluralize(details.totalMatches, "replacement");
+	if (details.dryRun) {
+		return (
+			theme.fg("warning", `[DRY RUN] ${replacements} previewed`) +
+			theme.fg("muted", ` • ${pluralize(fileCount, "file")}`)
 		);
 	}
 
+	return theme.fg("success", `Applied ${replacements}`) + theme.fg("muted", ` • ${pluralize(fileCount, "file")}`);
+}
+
+function formatCollapsedMatchGroups(groups: MatchGroup[], theme: Theme): string {
+	const lines: string[] = [];
+	for (const group of groups.slice(0, MAX_COLLAPSED_FILES)) {
+		lines.push(
+			theme.fg("muted", `  ${shortenPath(group.file)} (${pluralize(group.matches.length, "match", "matches")})`),
+		);
+	}
+
+	if (groups.length > MAX_COLLAPSED_FILES) {
+		lines.push(theme.fg("dim", `  … ${groups.length - MAX_COLLAPSED_FILES} more files`));
+	}
+
 	return lines.length > 0 ? `\n${lines.join("\n")}` : "";
+}
+
+function formatExpandedMatches(matches: CliMatch[], totalMatches: number, theme: Theme): string {
+	const groups = groupMatchesByFile(matches);
+	const lines: string[] = [];
+	let renderedMatches = 0;
+
+	for (const group of groups) {
+		if (renderedMatches >= MAX_EXPANDED_MATCHES) {
+			break;
+		}
+
+		lines.push(theme.fg("accent", shortenPath(group.file)));
+		for (const match of group.matches) {
+			if (renderedMatches >= MAX_EXPANDED_MATCHES) {
+				break;
+			}
+
+			const position = theme.fg("muted", formatPosition(match));
+			const snippet = theme.fg("toolOutput", truncateToWidth(formatMatchLine(match), MAX_SNIPPET_LENGTH));
+			lines.push(`  ${position}  ${snippet}`);
+			renderedMatches++;
+		}
+	}
+
+	if (totalMatches > renderedMatches) {
+		lines.push(theme.fg("dim", `… ${totalMatches - renderedMatches} more matches not shown`));
+	}
+
+	return lines.length > 0 ? `\n\n${lines.join("\n")}` : "";
 }
 
 function formatFallbackResult<TDetails>(result: AgentToolResult<TDetails>, theme: Theme): string {
@@ -336,11 +409,13 @@ function formatSearchResultText(
 		return text;
 	}
 
+	const groups = groupMatchesByFile(details.matches);
+	const summary = formatMatchSummary(details.totalMatches, groups.length, theme);
 	if (!options.expanded) {
-		return `${theme.fg("success", `✓ ${details.totalMatches} match(es)`)}${formatTruncationSuffix(details, theme)} (${keyHint(theme, "Ctrl+O", "to expand")})`;
+		return `${summary}${formatTruncationSuffix(details, theme)}${formatCollapsedMatchGroups(groups, theme)}`;
 	}
 
-	return `${theme.fg("success", `✓ ${details.totalMatches} match(es)`)}${formatTruncationBanner(details, theme)}${formatExpandedMatches(details.matches, theme)}`;
+	return `${summary}${formatTruncationBanner(details, theme)}${formatExpandedMatches(details.matches, details.totalMatches, theme)}`;
 }
 
 function formatReplaceResultText(
@@ -361,15 +436,14 @@ function formatReplaceResultText(
 		return theme.fg("dim", "No matches found to replace");
 	}
 
-	const summary = details.dryRun
-		? theme.fg("warning", `[DRY RUN] ${details.totalMatches} replacement(s) previewed`)
-		: theme.fg("success", `✓ Applied ${details.totalMatches} replacement(s)`);
+	const groups = groupMatchesByFile(details.matches);
+	const summary = formatReplacementSummary(details, groups.length, theme);
 
 	if (!options.expanded) {
-		return `${summary}${formatTruncationSuffix(details, theme)}`;
+		return `${summary}${formatTruncationSuffix(details, theme)}${formatCollapsedMatchGroups(groups, theme)}`;
 	}
 
-	return `${summary}${formatTruncationBanner(details, theme)}${formatExpandedMatches(details.matches, theme)}`;
+	return `${summary}${formatTruncationBanner(details, theme)}${formatExpandedMatches(details.matches, details.totalMatches, theme)}`;
 }
 
 export function renderSearchCall(args: unknown, theme: Theme, context: RenderContext): Text {

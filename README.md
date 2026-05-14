@@ -16,28 +16,36 @@ The same author re-licensed the ported source under MIT for distribution in the 
 > Find every console.log in src/
 
 [ast_grep_search] /console.log($MSG)/ in src/  (typescript)
-✓ 4 match(es)  (Ctrl+O to expand)
+4 matches • 3 files
+  src/index.ts (1 match)
+  src/cli.ts (1 match)
+  src/foo.ts (2 matches)
 
-  src/index.ts:11:3
-    console.log("greeting");
-  src/cli.ts:42:1
-    console.log("loaded");
-  src/foo.ts:18:5
-    console.log(error);
-  src/bar.ts:7:3
-    console.log("ready");
+src/index.ts
+  11:3  console.log("greeting");
+src/cli.ts
+  42:1  console.log("loaded");
+src/foo.ts
+  18:5  console.log(error);
+  27:3  console.log("ready");
 ```
 
 ```text
 > Rewrite the console.log calls to logger.info, dry run first.
 
 [ast_grep_replace] /console.log($MSG)/ → /logger.info($MSG)/  [DRY RUN]  (typescript)
-[DRY RUN] 4 replacement(s) previewed
+[DRY RUN] 4 replacements previewed • 3 files
+  src/index.ts (1 match)
+  src/cli.ts (1 match)
+  src/foo.ts (2 matches)
 
-  src/index.ts:11:3 → logger.info("greeting")
-  src/cli.ts:42:1   → logger.info("loaded")
-  ...
-Use dryRun=false to apply changes.
+src/index.ts
+  11:3  console.log("greeting");
+src/cli.ts
+  42:1  console.log("loaded");
+src/foo.ts
+  18:5  console.log(error);
+  27:3  console.log("ready");
 ```
 
 ## Installation

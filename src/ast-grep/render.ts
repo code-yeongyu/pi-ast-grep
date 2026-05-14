@@ -6,6 +6,7 @@ import type { CliLanguage, CliMatch, SgTruncationReason } from "./types.js";
 
 interface RenderContext {
 	lastComponent: Component | undefined;
+	isError?: boolean;
 }
 
 interface AstGrepSearchCallArgs {
@@ -262,7 +263,16 @@ function formatReplaceBadges(args: AstGrepReplaceCallArgs | undefined, theme: Th
 }
 
 function formatTruncationReason(reason: SgTruncationReason | undefined): string {
-	return reason ?? "results truncated";
+	if (reason === "max_matches") {
+		return "match limit reached";
+	}
+	if (reason === "max_output_bytes") {
+		return "output exceeded 1MB limit";
+	}
+	if (reason === "timeout") {
+		return "search timed out";
+	}
+	return "results truncated";
 }
 
 function formatTruncationSuffix(
@@ -382,8 +392,11 @@ function formatExpandedMatches(matches: CliMatch[], totalMatches: number, theme:
 	return lines.length > 0 ? `\n\n${lines.join("\n")}` : "";
 }
 
-function formatFallbackResult<TDetails>(result: AgentToolResult<TDetails>, theme: Theme): string {
+function formatFallbackResult<TDetails>(result: AgentToolResult<TDetails>, theme: Theme, isError = false): string {
 	const output = getTextContent(result).trim();
+	if (isError && output.length > 0) {
+		return theme.fg("error", `Error: ${truncateMessage(output)}`);
+	}
 	return output.length > 0 ? theme.fg("toolOutput", output) : theme.fg("dim", "No output");
 }
 
@@ -391,10 +404,11 @@ function formatSearchResultText(
 	result: AgentToolResult<unknown>,
 	options: ToolRenderResultOptions,
 	theme: Theme,
+	isError: boolean | undefined,
 ): string {
 	const details = isSearchDetails(result.details) ? result.details : undefined;
 	if (!details) {
-		return formatFallbackResult(result, theme);
+		return formatFallbackResult(result, theme, isError);
 	}
 
 	if (details.error) {
@@ -422,10 +436,11 @@ function formatReplaceResultText(
 	result: AgentToolResult<unknown>,
 	options: ToolRenderResultOptions,
 	theme: Theme,
+	isError: boolean | undefined,
 ): string {
 	const details = isReplaceDetails(result.details) ? result.details : undefined;
 	if (!details) {
-		return formatFallbackResult(result, theme);
+		return formatFallbackResult(result, theme, isError);
 	}
 
 	if (details.error) {
@@ -467,7 +482,7 @@ export function renderSearchResult(
 	context: RenderContext,
 ): Text {
 	const text = reuseText(context);
-	text.setText(formatSearchResultText(result, options, theme));
+	text.setText(formatSearchResultText(result, options, theme, context.isError));
 	return text;
 }
 
@@ -495,6 +510,6 @@ export function renderReplaceResult(
 	context: RenderContext,
 ): Text {
 	const text = reuseText(context);
-	text.setText(formatReplaceResultText(result, options, theme));
+	text.setText(formatReplaceResultText(result, options, theme, context.isError));
 	return text;
 }

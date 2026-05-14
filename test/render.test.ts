@@ -178,6 +178,43 @@ describe("renderSearchResult", () => {
 		expect(output).toContain("8:2");
 		expect(output).toContain("console.error(message);");
 	});
+
+	it("#given max output truncation #when collapsed #then explains the byte limit", () => {
+		// given
+		const details = makeSearchDetails({ truncated: true, truncatedReason: "max_output_bytes", totalMatches: 15 });
+		const result: AgentToolResult<AstGrepSearchDetails> = {
+			content: [{ type: "text", text: "" }],
+			details,
+		};
+
+		// when
+		const output = renderText(
+			renderSearchResult(result, { expanded: false, isPartial: false }, testTheme, { lastComponent: undefined }),
+		);
+
+		// then
+		expect(output).toContain("output exceeded 1MB limit");
+		expect(output).not.toContain("max_output_bytes");
+	});
+
+	it("#given an error fallback #when rendering #then keeps the failure visible", () => {
+		// given
+		const result: AgentToolResult<unknown> = {
+			content: [{ type: "text", text: "Output too large and could not be parsed" }],
+			details: {},
+		};
+
+		// when
+		const output = renderText(
+			renderSearchResult(result, { expanded: false, isPartial: false }, testTheme, {
+				lastComponent: undefined,
+				isError: true,
+			}),
+		);
+
+		// then
+		expect(output).toContain("Error: Output too large and could not be parsed");
+	});
 });
 
 describe("renderReplaceResult", () => {

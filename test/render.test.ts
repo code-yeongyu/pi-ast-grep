@@ -1,5 +1,5 @@
-import type { AgentToolResult } from "@mariozechner/pi-coding-agent";
-import { Theme } from "@mariozechner/pi-coding-agent";
+import type { AgentToolResult } from "@earendil-works/pi-coding-agent";
+import { Theme } from "@earendil-works/pi-coding-agent";
 import { describe, expect, it } from "vitest";
 
 import { renderReplaceResult, renderSearchResult } from "../src/ast-grep/render.js";

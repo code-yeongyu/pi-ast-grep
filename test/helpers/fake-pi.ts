@@ -1,5 +1,5 @@
-import type { ExtensionAPI, ToolDefinition } from "@mariozechner/pi-coding-agent";
-import { createEventBus } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI, ToolDefinition } from "@earendil-works/pi-coding-agent";
+import { createEventBus } from "@earendil-works/pi-coding-agent";
 import type { TSchema } from "typebox";
 
 export interface CapturedTool {

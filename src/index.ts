@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 import { findSgCliPathSync } from "./ast-grep/binary-path.js";
 import { ensureAstGrepBinary, getCacheDir, getCachedBinaryPath } from "./ast-grep/downloader.js";

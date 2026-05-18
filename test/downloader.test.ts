@@ -4,20 +4,20 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { DEFAULT_AST_GREP_VERSION, getBinaryName, getCacheDir, PLATFORM_MAP } from "../src/ast-grep/downloader.js";
 
-const originalXdgCacheHome = process.env.XDG_CACHE_HOME;
+const originalXdgCacheHome = process.env["XDG_CACHE_HOME"];
 
 describe("downloader helpers", () => {
 	beforeEach(() => {
-		process.env.XDG_CACHE_HOME = "/tmp/pi-ast-grep-cache-test";
+		process.env["XDG_CACHE_HOME"] = "/tmp/pi-ast-grep-cache-test";
 	});
 
 	afterEach(() => {
 		if (originalXdgCacheHome === undefined) {
-			delete process.env.XDG_CACHE_HOME;
+			delete process.env["XDG_CACHE_HOME"];
 			return;
 		}
 
-		process.env.XDG_CACHE_HOME = originalXdgCacheHome;
+		process.env["XDG_CACHE_HOME"] = originalXdgCacheHome;
 	});
 
 	it("#given cache environment override #when building cache dir #then returns pi ast grep cache path", () => {

@@ -11,7 +11,7 @@ import { CLI_LANGUAGES } from "./languages.js";
 import { getPatternHint } from "./pattern-hints.js";
 import { renderReplaceCall, renderReplaceResult, renderSearchCall, renderSearchResult } from "./render.js";
 import { formatReplaceResult, formatSearchResult } from "./result-formatter.js";
-import type { CliLanguage, SgResult } from "./types.js";
+import type { CliLanguage, RunSgOptions, SgResult, SgTruncationReason } from "./types.js";
 
 function isCliLanguage(value: unknown): value is CliLanguage {
 	return typeof value === "string" && CLI_LANGUAGES.some((language) => language === value);
@@ -62,7 +62,7 @@ export interface AstGrepSearchDetails {
 	matches: SgResult["matches"];
 	totalMatches: number;
 	truncated: boolean;
-	truncatedReason?: SgResult["truncatedReason"];
+	truncatedReason?: SgTruncationReason;
 	error?: string;
 	hint?: string;
 }
@@ -77,7 +77,7 @@ export interface AstGrepReplaceDetails {
 	matches: SgResult["matches"];
 	totalMatches: number;
 	truncated: boolean;
-	truncatedReason?: SgResult["truncatedReason"];
+	truncatedReason?: SgTruncationReason;
 	error?: string;
 }
 
@@ -102,13 +102,14 @@ export const ast_grep_search = defineTool({
 		}
 
 		const paths = params.paths && params.paths.length > 0 ? params.paths : [ctx.cwd];
-		const result = await runSg({
+		const options: RunSgOptions = {
 			pattern: params.pattern,
 			lang: params.lang,
 			paths,
-			globs: params.globs,
-			context: params.context,
-		});
+		};
+		if (params.globs !== undefined) options.globs = params.globs;
+		if (params.context !== undefined) options.context = params.context;
+		const result = await runSg(options);
 
 		const text = formatSearchResult(result);
 		const hint =
@@ -121,14 +122,14 @@ export const ast_grep_search = defineTool({
 			pattern: params.pattern,
 			lang: params.lang,
 			paths,
-			globs: params.globs,
 			matches: result.matches,
 			totalMatches: result.totalMatches,
 			truncated: result.truncated,
-			truncatedReason: result.truncatedReason,
-			error: result.error,
-			hint,
 		};
+		if (params.globs !== undefined) details.globs = params.globs;
+		if (result.truncatedReason !== undefined) details.truncatedReason = result.truncatedReason;
+		if (result.error !== undefined) details.error = result.error;
+		if (hint !== undefined) details.hint = hint;
 
 		return {
 			content: [{ type: "text", text: finalText }],
@@ -160,14 +161,15 @@ export const ast_grep_replace = defineTool({
 
 		const paths = params.paths && params.paths.length > 0 ? params.paths : [ctx.cwd];
 		const dryRun = params.dryRun !== false;
-		const result = await runSg({
+		const options: RunSgOptions = {
 			pattern: params.pattern,
 			rewrite: params.rewrite,
 			lang: params.lang,
 			paths,
-			globs: params.globs,
 			updateAll: !dryRun,
-		});
+		};
+		if (params.globs !== undefined) options.globs = params.globs;
+		const result = await runSg(options);
 
 		const text = formatReplaceResult(result, dryRun);
 
@@ -176,14 +178,14 @@ export const ast_grep_replace = defineTool({
 			rewrite: params.rewrite,
 			lang: params.lang,
 			paths,
-			globs: params.globs,
 			dryRun,
 			matches: result.matches,
 			totalMatches: result.totalMatches,
 			truncated: result.truncated,
-			truncatedReason: result.truncatedReason,
-			error: result.error,
 		};
+		if (params.globs !== undefined) details.globs = params.globs;
+		if (result.truncatedReason !== undefined) details.truncatedReason = result.truncatedReason;
+		if (result.error !== undefined) details.error = result.error;
 
 		return {
 			content: [{ type: "text", text }],

@@ -5,5 +5,6 @@ export default defineConfig({
 		include: ["test/**/*.test.ts"],
 		exclude: ["test/integration/**"],
 		environment: "node",
+		pool: "threads",
 	},
 });

@@ -39,7 +39,7 @@ function isSupportedPlatform(platform: NodeJS.Platform): platform is SupportedPl
 
 function findOnPath(binaryName: string): string | null {
 	const isWindows = process.platform === "win32";
-	const pathEnv = process.env.PATH ?? (isWindows ? (process.env.Path ?? "") : "");
+	const pathEnv = process.env["PATH"] ?? (isWindows ? (process.env["Path"] ?? "") : "");
 	if (!pathEnv) return null;
 
 	const exts = isWindows ? ["", ".exe"] : [""];

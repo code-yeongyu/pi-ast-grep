@@ -47,12 +47,12 @@ function isPackageWithVersion(value: unknown): value is { version: string } {
 
 export function getCacheDir(): string {
 	if (process.platform === "win32") {
-		const localAppData = process.env.LOCALAPPDATA ?? process.env.APPDATA;
+		const localAppData = process.env["LOCALAPPDATA"] ?? process.env["APPDATA"];
 		const base = localAppData ?? join(homedir(), "AppData", "Local");
 		return join(base, CACHE_DIR_NAME, "bin");
 	}
 
-	const xdgCache = process.env.XDG_CACHE_HOME;
+	const xdgCache = process.env["XDG_CACHE_HOME"];
 	const base = xdgCache ?? join(homedir(), ".cache");
 	return join(base, CACHE_DIR_NAME, "bin");
 }
@@ -66,7 +66,7 @@ export function getCachedBinaryPath(): string | null {
 }
 
 export async function downloadAstGrep(version: string = DEFAULT_VERSION): Promise<string | null> {
-	if (process.env.PI_OFFLINE === "1" || process.env.PI_OFFLINE === "true") {
+	if (process.env["PI_OFFLINE"] === "1" || process.env["PI_OFFLINE"] === "true") {
 		return null;
 	}
 
@@ -104,7 +104,7 @@ export async function downloadAstGrep(version: string = DEFAULT_VERSION): Promis
 }
 
 export async function ensureAstGrepBinary(): Promise<string | null> {
-	if (process.env.PI_OFFLINE === "1" || process.env.PI_OFFLINE === "true") {
+	if (process.env["PI_OFFLINE"] === "1" || process.env["PI_OFFLINE"] === "true") {
 		return null;
 	}
 

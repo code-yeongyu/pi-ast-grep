@@ -57,7 +57,7 @@ describe("language support", () => {
 
 	it("#given language extensions #when inspecting python #then includes py and pyi", () => {
 		// given / when
-		const pythonExtensions = LANG_EXTENSIONS.python;
+		const pythonExtensions = LANG_EXTENSIONS["python"];
 
 		// then
 		expect(pythonExtensions).toContain(".py");

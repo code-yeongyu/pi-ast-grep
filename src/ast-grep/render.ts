@@ -94,22 +94,22 @@ function isCliMatch(value: unknown): value is CliMatch {
 		return false;
 	}
 
-	const range = value.range;
+	const range = value["range"];
 	if (!isRecord(range)) {
 		return false;
 	}
 
-	const start = range.start;
+	const start = range["start"];
 	if (!isRecord(start)) {
 		return false;
 	}
 
 	return (
-		typeof value.file === "string" &&
-		typeof value.lines === "string" &&
-		typeof value.text === "string" &&
-		typeof start.line === "number" &&
-		typeof start.column === "number"
+		typeof value["file"] === "string" &&
+		typeof value["lines"] === "string" &&
+		typeof value["text"] === "string" &&
+		typeof start["line"] === "number" &&
+		typeof start["column"] === "number"
 	);
 }
 
@@ -122,13 +122,18 @@ function getSearchCallArgs(args: unknown): AstGrepSearchCallArgs | undefined {
 		return undefined;
 	}
 
-	return {
-		pattern: readString(args, "pattern"),
-		lang: readString(args, "lang"),
-		paths: readStringArray(args, "paths"),
-		globs: readStringArray(args, "globs"),
-		context: readNumber(args, "context"),
-	};
+	const result: AstGrepSearchCallArgs = {};
+	const pattern = readString(args, "pattern");
+	const lang = readString(args, "lang");
+	const paths = readStringArray(args, "paths");
+	const globs = readStringArray(args, "globs");
+	const context = readNumber(args, "context");
+	if (pattern !== undefined) result.pattern = pattern;
+	if (lang !== undefined) result.lang = lang;
+	if (paths !== undefined) result.paths = paths;
+	if (globs !== undefined) result.globs = globs;
+	if (context !== undefined) result.context = context;
+	return result;
 }
 
 function getReplaceCallArgs(args: unknown): AstGrepReplaceCallArgs | undefined {
@@ -136,14 +141,20 @@ function getReplaceCallArgs(args: unknown): AstGrepReplaceCallArgs | undefined {
 		return undefined;
 	}
 
-	return {
-		pattern: readString(args, "pattern"),
-		rewrite: readString(args, "rewrite"),
-		lang: readString(args, "lang"),
-		paths: readStringArray(args, "paths"),
-		globs: readStringArray(args, "globs"),
-		dryRun: readBoolean(args, "dryRun"),
-	};
+	const result: AstGrepReplaceCallArgs = {};
+	const pattern = readString(args, "pattern");
+	const rewrite = readString(args, "rewrite");
+	const lang = readString(args, "lang");
+	const paths = readStringArray(args, "paths");
+	const globs = readStringArray(args, "globs");
+	const dryRun = readBoolean(args, "dryRun");
+	if (pattern !== undefined) result.pattern = pattern;
+	if (rewrite !== undefined) result.rewrite = rewrite;
+	if (lang !== undefined) result.lang = lang;
+	if (paths !== undefined) result.paths = paths;
+	if (globs !== undefined) result.globs = globs;
+	if (dryRun !== undefined) result.dryRun = dryRun;
+	return result;
 }
 
 function isSearchDetails(value: unknown): value is AstGrepSearchDetails {
@@ -151,17 +162,17 @@ function isSearchDetails(value: unknown): value is AstGrepSearchDetails {
 		return false;
 	}
 
-	const truncatedReason = value.truncatedReason;
-	const error = value.error;
-	const hint = value.hint;
+	const truncatedReason = value["truncatedReason"];
+	const error = value["error"];
+	const hint = value["hint"];
 	return (
-		typeof value.pattern === "string" &&
-		isCliLanguage(value.lang) &&
-		Array.isArray(value.paths) &&
-		value.paths.every((item) => typeof item === "string") &&
-		isCliMatchArray(value.matches) &&
-		typeof value.totalMatches === "number" &&
-		typeof value.truncated === "boolean" &&
+		typeof value["pattern"] === "string" &&
+		isCliLanguage(value["lang"]) &&
+		Array.isArray(value["paths"]) &&
+		value["paths"].every((item) => typeof item === "string") &&
+		isCliMatchArray(value["matches"]) &&
+		typeof value["totalMatches"] === "number" &&
+		typeof value["truncated"] === "boolean" &&
 		(truncatedReason === undefined || isTruncationReason(truncatedReason)) &&
 		(error === undefined || typeof error === "string") &&
 		(hint === undefined || typeof hint === "string")
@@ -173,18 +184,18 @@ function isReplaceDetails(value: unknown): value is AstGrepReplaceDetails {
 		return false;
 	}
 
-	const truncatedReason = value.truncatedReason;
-	const error = value.error;
+	const truncatedReason = value["truncatedReason"];
+	const error = value["error"];
 	return (
-		typeof value.pattern === "string" &&
-		typeof value.rewrite === "string" &&
-		isCliLanguage(value.lang) &&
-		Array.isArray(value.paths) &&
-		value.paths.every((item) => typeof item === "string") &&
-		typeof value.dryRun === "boolean" &&
-		isCliMatchArray(value.matches) &&
-		typeof value.totalMatches === "number" &&
-		typeof value.truncated === "boolean" &&
+		typeof value["pattern"] === "string" &&
+		typeof value["rewrite"] === "string" &&
+		isCliLanguage(value["lang"]) &&
+		Array.isArray(value["paths"]) &&
+		value["paths"].every((item) => typeof item === "string") &&
+		typeof value["dryRun"] === "boolean" &&
+		isCliMatchArray(value["matches"]) &&
+		typeof value["totalMatches"] === "number" &&
+		typeof value["truncated"] === "boolean" &&
 		(truncatedReason === undefined || isTruncationReason(truncatedReason)) &&
 		(error === undefined || typeof error === "string")
 	);
@@ -205,7 +216,7 @@ function truncateMessage(message: string): string {
 
 function shortenPath(path: string): string {
 	const normalizedPath = path.replace(/\\/g, "/");
-	const homeDirectory = process.env.HOME?.replace(/\\/g, "/");
+	const homeDirectory = process.env["HOME"]?.replace(/\\/g, "/");
 	const displayPath =
 		homeDirectory && normalizedPath.startsWith(homeDirectory)
 			? `~${normalizedPath.slice(homeDirectory.length)}`

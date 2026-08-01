@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Raised the supported pi runtime baseline to `0.83.0` and Node.js to `22.19.0`.
+- Typed Node's global fetch stream through the async-iterable web stream contract used by the downloader.
+
 ### Added
 
 - Initial release porting omo's `ast_grep_search` and `ast_grep_replace` tools

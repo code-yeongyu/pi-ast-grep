@@ -54,6 +54,7 @@ const testTheme = new Theme(
 		thinkingMedium: COLOR,
 		thinkingHigh: COLOR,
 		thinkingXhigh: COLOR,
+		thinkingMax: COLOR,
 		bashMode: COLOR,
 	},
 	{

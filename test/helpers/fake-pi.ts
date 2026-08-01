@@ -19,6 +19,7 @@ export function createFakePi(): { pi: ExtensionAPI; tools: CapturedTool[] } {
 	const registerFlag: ExtensionAPI["registerFlag"] = () => {};
 	const getFlag: ExtensionAPI["getFlag"] = () => undefined;
 	const registerMessageRenderer: ExtensionAPI["registerMessageRenderer"] = () => {};
+	const registerEntryRenderer: ExtensionAPI["registerEntryRenderer"] = () => {};
 	const sendMessage: ExtensionAPI["sendMessage"] = () => {};
 	const sendUserMessage: ExtensionAPI["sendUserMessage"] = () => {};
 	const appendEntry: ExtensionAPI["appendEntry"] = () => {};
@@ -49,6 +50,7 @@ export function createFakePi(): { pi: ExtensionAPI; tools: CapturedTool[] } {
 		registerFlag,
 		getFlag,
 		registerMessageRenderer,
+		registerEntryRenderer,
 		sendMessage,
 		sendUserMessage,
 		appendEntry,

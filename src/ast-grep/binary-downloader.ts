@@ -27,7 +27,7 @@ export async function downloadArchive(downloadUrl: string, archivePath: string):
 		throw new AstGrepDownloadError("Empty response body");
 	}
 
-	const nodeStream = Readable.fromWeb(response.body);
+	const nodeStream = Readable.from(response.body);
 	await pipeline(nodeStream, createWriteStream(archivePath));
 }
 

@@ -14,7 +14,7 @@ import {
 
 const REPO = "ast-grep/ast-grep";
 const CACHE_DIR_NAME = "pi-ast-grep";
-const DEFAULT_VERSION = "0.41.1";
+const DEFAULT_VERSION = "0.45.3";
 
 interface PlatformInfo {
 	arch: string;

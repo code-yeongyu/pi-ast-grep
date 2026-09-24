@@ -23,53 +23,56 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: ["20", "22"]
+        node: ["22", "24"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Check (tsgo + biome)
-        run: npm run check
+        run: bun run check
 
       - name: Unit tests
         env:
           PI_OFFLINE: "1"
-        run: npm test
+        run: bun run test
+
+      - name: Integration tests
+        run: bun run test:integration
 
       - name: Package smoke
         run: npm pack --dry-run
 
-  integration:
-    name: integration (real sg binary · ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+  npm-consumer:
+    name: npm-consumer
+    runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: test
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
 
-      - name: Install dependencies
+      - name: Install with npm
         run: npm ci
 
-      - name: Run integration tests
-        run: npm run test:integration
+      - name: Test
+        env:
+          PI_OFFLINE: "1"
+        run: npm test

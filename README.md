@@ -136,7 +136,7 @@ When you genuinely want text search, use the built-in `grep` tool instead.
 3. **Platform-specific npm package** — `@ast-grep/cli-{platform}-{arch}-{libc}` (`darwin-arm64`, `darwin-x64`, `linux-arm64`, `linux-x64`, `win32-x64`, `win32-arm64`, `win32-ia32`).
 4. **`PATH`** — any `sg` (or `sg.exe`) on the system PATH.
 5. **Homebrew** — `/opt/homebrew/bin/sg`, `/usr/local/bin/sg` on macOS.
-6. **GitHub release auto-download** (last resort) — pulls `app-{arch}-{os}.zip` from `https://github.com/ast-grep/ast-grep/releases/download/<version>/...` and extracts to the cache directory. The version comes from the `@ast-grep/cli` package.json when present, otherwise `0.41.1`.
+6. **GitHub release auto-download** (last resort) — pulls `app-{arch}-{os}.zip` from `https://github.com/ast-grep/ast-grep/releases/download/<version>/...` and extracts to the cache directory. The version comes from the `@ast-grep/cli` package.json when present, otherwise `0.45.3`.
 
 ### Trust model
 
@@ -178,12 +178,14 @@ brew install ast-grep
 ```bash
 git clone https://github.com/code-yeongyu/pi-ast-grep
 cd pi-ast-grep
-npm install            # install dev + peer dependencies
-npm test               # run vitest
-npm run typecheck      # strict tsc --noEmit
-npm run check          # tsc + biome
+bun install            # install dev + peer dependencies (Bun 1.4.2+)
+bun test               # run vitest
+bun run typecheck      # strict tsgo --noEmit
+bun run check          # tsgo + biome
 pi -e ./src/index.ts   # smoke-test inside a real pi session
 ```
+
+npm consumers can still install and test with `npm ci` / `npm test`. The lockfile `package-lock.json` is kept for that path.
 
 The test suite uses vitest. Test descriptions follow `#given .. #when .. #then` style; bodies use plain `// given / // when / // then` comments. No `any`, no enums.
 

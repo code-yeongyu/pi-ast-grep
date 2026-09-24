@@ -166,4 +166,4 @@ export async function runSg(options: RunSgOptions, hasRetriedDownload = false): 
 	return jsonResult;
 }
 
-export { INSTALL_HINT, AUTO_DOWNLOAD_FAILED_HINT };
+export { AUTO_DOWNLOAD_FAILED_HINT, INSTALL_HINT };

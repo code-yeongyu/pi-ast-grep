@@ -61,6 +61,6 @@ describe("downloader helpers", () => {
 
 	it("#given default version #when inspecting downloader constant #then matches ast grep cli version", () => {
 		// given / when / then
-		expect(DEFAULT_AST_GREP_VERSION).toBe("0.41.1");
+		expect(DEFAULT_AST_GREP_VERSION).toBe("0.45.3");
 	});
 });

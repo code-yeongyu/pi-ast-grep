@@ -9,7 +9,7 @@ export interface CapturedTool {
 export function createFakePi(): { pi: ExtensionAPI; tools: CapturedTool[] } {
 	const tools: CapturedTool[] = [];
 
-	const on: ExtensionAPI["on"] = () => {};
+	const on: ExtensionAPI["on"] = () => () => {};
 	const registerTool: ExtensionAPI["registerTool"] = (definition) => {
 		const capturedDefinition = definition as ToolDefinition<TSchema, unknown, never>;
 		tools.push({ definition: capturedDefinition });
@@ -19,6 +19,8 @@ export function createFakePi(): { pi: ExtensionAPI; tools: CapturedTool[] } {
 	const registerFlag: ExtensionAPI["registerFlag"] = () => {};
 	const getFlag: ExtensionAPI["getFlag"] = () => undefined;
 	const registerMessageRenderer: ExtensionAPI["registerMessageRenderer"] = () => {};
+	const registerMarkdownTransformer: ExtensionAPI["registerMarkdownTransformer"] = () => {};
+	const registerEntryRenderer: ExtensionAPI["registerEntryRenderer"] = () => {};
 	const sendMessage: ExtensionAPI["sendMessage"] = () => {};
 	const sendUserMessage: ExtensionAPI["sendUserMessage"] = () => {};
 	const appendEntry: ExtensionAPI["appendEntry"] = () => {};
@@ -49,6 +51,8 @@ export function createFakePi(): { pi: ExtensionAPI; tools: CapturedTool[] } {
 		registerFlag,
 		getFlag,
 		registerMessageRenderer,
+		registerMarkdownTransformer,
+		registerEntryRenderer,
 		sendMessage,
 		sendUserMessage,
 		appendEntry,

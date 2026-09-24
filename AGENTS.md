@@ -14,10 +14,11 @@ Conventions for human contributors and AI agents working on this repository.
 
 ## Commands
 
-- `npm install` — install dependencies (peer + dev). Run after clone.
-- `npm test` — run vitest test suite once.
-- `npm run typecheck` — strict TypeScript check (no emit).
-- `npm run check` — type check + biome.
+- `bun install` — install dependencies (peer + dev). Run after clone.
+- `bun test` — run vitest test suite once.
+- `bun run typecheck` — strict TypeScript check (no emit).
+- `bun run check` — type check + biome.
+- `npm ci && npm test` — npm-consumer path (package-lock.json is kept).
 - `pi -e ./src/index.ts` — load the extension into a local pi session for
   manual smoke testing.
 
@@ -41,4 +42,4 @@ Conventions for human contributors and AI agents working on this repository.
   shared branches.
 - No new dependency on omo source paths. The package is standalone.
 - No new dependency on pi-coding-agent internal modules outside the
-  documented public extension API in `@mariozechner/pi-coding-agent`.
+  documented public extension API in `@earendil-works/pi-coding-agent`.
